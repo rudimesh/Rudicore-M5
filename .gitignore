@@ -1,0 +1,68 @@
+# ─────────── PlatformIO ───────────
+.pio/
+libdeps/
+.clang_complete
+.gcc-flags.json
+.gcov/
+.gprof/
+
+# ─────────── Editors / IDEs ───────────
+.vscode/
+.idea/
+*.iml
+
+# ─────────── Build output ───────────
+*.elf
+*.bin
+*.hex
+*.map
+*.out
+*.o
+*.a
+*.d
+*.dump
+
+# ─────────── OS system files ───────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ─────────── Secrets / configs ───────────
+secrets.h
+.env
+*.key
+*.pem
+*.crt
+*.p12
+*.cer
+
+# ─────────── Editor artifacts ───────────
+*~
+*.swp
+*.swo
+.#*
+
+# ─────────── Logs / caches ───────────
+*.log
+*.cache
+*.bak
+*.tmp
+
+# ─────────── Python ───────────
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# ─────────── Core dumps ───────────
+core
+core.*
+
+# ─────────── Misc ───────────
+*.tgz
+*.tar.gz
+*.zip
+*.7z
+*.gz
+*.bz2
+*.xz
