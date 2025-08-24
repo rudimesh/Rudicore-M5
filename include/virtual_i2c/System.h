@@ -100,9 +100,18 @@ Preferences prefs;
 inline int FriendlyNameOffsetLoad()
 {
   int val = 0;
-  if (prefs.begin("friendly", true))
+  // Open read-write to auto-create namespace after flash erase
+  if (prefs.begin("friendly", false))
   {
-    val = prefs.getInt("offset", 0);
+    if (prefs.isKey("offset"))
+    {
+      val = prefs.getInt("offset");
+    }
+    else
+    {
+      val = 0; // default
+      prefs.putInt("offset", val); // initialize to avoid future NOT_FOUND
+    }
     prefs.end();
   }
   return val;
@@ -118,9 +127,18 @@ inline void FriendlyNameOffsetSave(int val)
 inline String DeviceTypeLoad()
 {
   String val = "Gray";
-  if (prefs.begin("friendly", true))
+  // Open read-write to auto-create namespace after flash erase
+  if (prefs.begin("friendly", false))
   {
-    val = prefs.getString("device_type", "Gray");
+    if (prefs.isKey("device_type"))
+    {
+      val = prefs.getString("device_type");
+    }
+    else
+    {
+      val = "Gray"; // default
+      prefs.putString("device_type", val); // initialize to avoid future NOT_FOUND
+    }
     prefs.end();
   }
   return val;
@@ -142,9 +160,18 @@ inline void DeviceTypeSave(const String &val)
 inline uint8_t VirtualI2CMaskLoad()
 {
   uint8_t mask = 0; // default: show all virtual devices
-  if (prefs.begin("i2cmask", true))
+  // Open read-write to auto-create namespace after flash erase
+  if (prefs.begin("i2cmask", false))
   {
-    mask = prefs.getUChar("mask", 0);
+    if (prefs.isKey("mask"))
+    {
+      mask = prefs.getUChar("mask");
+    }
+    else
+    {
+      mask = 0;
+      prefs.putUChar("mask", mask); // initialize to avoid future NOT_FOUND
+    }
     prefs.end();
   }
   return mask;

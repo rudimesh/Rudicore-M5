@@ -79,9 +79,21 @@ void bmm150_offset_save()
 
 void bmm150_offset_load()
 {
-  if (prefs.begin("bmm150", true))
+  // Open read-write to auto-create namespace after flash erase
+  if (prefs.begin("bmm150", false))
   {
-    prefs.getBytes("offset", (uint8_t *)&mag_offset, sizeof(bmm150_mag_data));
+    if (prefs.isKey("offset"))
+    {
+      prefs.getBytes("offset", (uint8_t *)&mag_offset, sizeof(bmm150_mag_data));
+    }
+    else
+    {
+      // Default to zero offsets and initialize to avoid future NOT_FOUND
+      mag_offset.x = 0;
+      mag_offset.y = 0;
+      mag_offset.z = 0;
+      prefs.putBytes("offset", (uint8_t *)&mag_offset, sizeof(bmm150_mag_data));
+    }
     prefs.end();
   }
 }
