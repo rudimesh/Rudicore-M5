@@ -20,7 +20,7 @@ Send commands over USB serial or Bluetooth as lines starting with `>`, for examp
 ## Speaker (virtual, prefix `Speaker`)
 - `>Speaker.Beep()`
 - `>Speaker.Upload(SampleSize=1-1000)` then stream bytes
-- `>Speaker.Play(SamplingRate=1-100000, NumberOfTimes=0-1000, Port=25|26|Both)`
+- `>Speaker.Play(SamplingRate=1-100000, NumberOfTimes=0-100000)`
 - `>Speaker.Stop()`
 
 ## ESP32 ADC (virtual, prefix `ESP32ADC`)
