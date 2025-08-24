@@ -3,7 +3,7 @@
 /* --- ESP32 ADC (virtual I2C addr D2) ---------------------------------------
  * Command strings:
  *  >ESP32ADC.Configure(Port= , Attenuation= , MarkChannelTwo=false,
- *                      MeasuringInterval=, SamplingRate=, SampleSize=,
+ *                      EnvelopeMeasurementDuration=, SamplingRate=, SampleSize=,
  *                      TriggerEvent=, Format=Byte|String)
  *  >ESP32ADC.GetConfiguration(BufferSize)
  *  >ESP32ADC.GetConfiguration()
@@ -23,9 +23,9 @@ static bool ESP_ADC2 = false;
 static bool ESP_Both = false;
 static bool ESP_MarkChannelTwo = false;
 
-#define ESP_MeasuringIntervalDefault  1000
-static unsigned long ESP_MeasuringInterval = ESP_MeasuringIntervalDefault;
-#define ESP_MeasuringIntervalMax  100000
+#define ESP_EnvelopeMeasurementDurationDefault  1000
+static unsigned long ESP_EnvelopeMeasurementDuration = ESP_EnvelopeMeasurementDurationDefault;
+#define ESP_EnvelopeMeasurementDurationMax  100000
 
 #define ESP_SamplingRateDefault 1000
 static unsigned long ESP_SamplingRate = ESP_SamplingRateDefault;
@@ -140,7 +140,7 @@ static String ESP32_ADC_GetEnvelope()
   String ReturnValue;
   int ADC_GPIO = ESP_ADC1Port;
   if (ESP_ADC2) ADC_GPIO = ESP_ADC2Port;
-  unsigned long ttm = ESP_MeasuringInterval;
+  unsigned long ttm = ESP_EnvelopeMeasurementDuration;
   ESP32_ADC_Trigger(ESP_TriggerPort, ESP_TriggerEvent);
 
   if (ESP_Both)
@@ -305,14 +305,14 @@ String ESP_ADC()
     String param_val;
     ESP_Set_Port();
 
-    param_val = GetParameterValue("MEASURINGINTERVAL", UpperCase);
+    param_val = GetParameterValue("ENVELOPEMEASUREMENTDURATION", UpperCase);
     if ((param_val != "NOPARAM") && (param_val != "NOVAL"))
     {
-      ESP_MeasuringInterval = param_val.toInt();
-      if ((ESP_MeasuringInterval > ESP_MeasuringIntervalMax) || (ESP_MeasuringInterval <= 0))
+      ESP_EnvelopeMeasurementDuration = param_val.toInt();
+      if ((ESP_EnvelopeMeasurementDuration > ESP_EnvelopeMeasurementDurationMax) || (ESP_EnvelopeMeasurementDuration <= 0))
       {
-        LastError("MeasuringInterval out of range, set to default");
-        ESP_MeasuringInterval = ESP_MeasuringIntervalDefault;
+        LastError("EnvelopeMeasurementDuration out of range, set to default");
+        ESP_EnvelopeMeasurementDuration = ESP_EnvelopeMeasurementDurationDefault;
       }
     }
 
@@ -382,7 +382,7 @@ String ESP_ADC()
       if (ESP_ADC1) ExPorts = "35"; else ExPorts = "36";
     String result = "Ports in use = " + ExPorts + "\n";
     result = result + "Attenuation = " + ESP_Attenuation + "\n";
-    result = result + "MeasuringInterval = " + String(ESP_MeasuringInterval) + "\n";
+    result = result + "EnvelopeMeasurementDuration = " + String(ESP_EnvelopeMeasurementDuration) + "\n";
     result = result + "SamplingRate = " + String(ESP_SamplingRate) + "\n";
     result = result + "SampleSize = " + String(ESP_SampleSize) + "\n";
     result = result + "TriggerEvent = " + ESP_TriggerEvents[ESP_TriggerEvent] + "\n";
