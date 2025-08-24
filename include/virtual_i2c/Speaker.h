@@ -1,44 +1,38 @@
 #pragma once
 
+#include "driver/dac.h"
+
 /* --- Speaker virtual unit (I2C addr D3) -----------------------------------
  * Command strings (prefix: Speaker):
  *   >Speaker.Beep()
  *   >Speaker.Upload(SampleSize=1-1000)        // immediately send bytes
- *   >Speaker.Play(SamplingRate=1-100000, NumberOfTimes=0-1000, Port=25|26|Both)
+ *   >Speaker.Play(SamplingRate=1-100000, NumberOfTimes=0-1000)
  *   >Speaker.Stop()
  */
 
-// Simple beep utility, used by other units as well
+// Simple beep
 inline void Beep()
 {
-  M5.Speaker.setVolume(5);
-  M5.Speaker.tone(1000, 100);
-  delay(100);
-  M5.Speaker.mute();
+  tone(25,1000,100);
 }
 
-// Wave generator state
-#define WG_DACpinDefault 26
-static unsigned int WG_DACpin = WG_DACpinDefault;
+// Analog wave generator
 
 #define WG_NumberOfRepsDefault  0
 static unsigned int WG_NumberOfReps = WG_NumberOfRepsDefault;
 static unsigned int WG_NumberOfRepsMax = 100000;
-
 #define WG_SampleSizeMax 1000
 static unsigned int WG_SampleSize = WG_SampleSizeMax;
-
 #define WG_SamplingRateDefault 10000
 static unsigned int WG_SamplingRate = WG_SamplingRateDefault;
 static unsigned int WG_SamplingRateMax = 100000;
-
 static unsigned int WG_Pointer = 0;
 static byte WG_buf[WG_SampleSizeMax];
 
 static inline void WG_MuteDAC()
 {
-  dacWrite(25, 0);
-  dacWrite(26, 0);
+  dac_output_disable(DAC_CHANNEL_1); // disable DAC on GPIO25
+  pinMode(25, INPUT_PULLDOWN);       // make it a quiet digital pin
 }
 
 static bool WG_UploadByte(unsigned int sample_size)
@@ -62,11 +56,10 @@ static bool WG_Play(int rate, int reps)
     {
       while (start + ttw > micros());
       start = micros();
-      if ((WG_DACpin==26) || (WG_DACpin==99)) dacWrite(26, WG_buf[n]);
-      if ((WG_DACpin==25) || (WG_DACpin==99)) dacWrite(25, WG_buf[n]);
+      dacWrite(25, WG_buf[n]);
     }
     r++;
-  } while ((reps == 0) || (r < reps));
+  } while ((reps == 0) || (r < reps)); // infinite reps if zero 
   return true;
 }
 
@@ -119,20 +112,11 @@ String Speaker()
       }
     }
 
-    param_val = GetParameterValue("PORT", UpperCase);
-    if ((param_val != "NOPARAM") && (param_val != "NOVAL"))
-    {
-      if (param_val == "25") WG_DACpin = 25;
-      if (param_val == "26") WG_DACpin = 26;
-      if (param_val == "BOTH") WG_DACpin = 99;
-      if ((WG_DACpin !=25) && (WG_DACpin !=26) && (WG_DACpin != 99))
-      {
-        LastError("Port number incorrect.");
-        return "-";
-      }
+    if (WG_Play(WG_SamplingRate, WG_NumberOfReps)) {
+    WG_MuteDAC();
+    return " ";
     }
 
-    if (WG_Play(WG_SamplingRate, WG_NumberOfReps)) return " ";
     WG_MuteDAC();
     LastError("Waveform repetitions interrupted by user.");
     return "-";
