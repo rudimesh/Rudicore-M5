@@ -3,12 +3,12 @@
 /* --- ESP32 ADC (virtual I2C addr D2) ---------------------------------------
  * Command strings:
  *  >ESP32ADC.Configure(Port= , Attenuation= , MarkChannelTwo=false,
- *                      EnvelopeMeasurementDuration=, SamplingRate=, SampleSize=,
- *                      TriggerEvent=, Format=Byte|String)
+ *                      SamplingRate=, SampleSize=, TriggerEvent=,
+ *                      Format=Byte|String)
  *  >ESP32ADC.GetConfiguration(BufferSize)
  *  >ESP32ADC.GetConfiguration()
  *  >ESP32ADC.GetValue()
- *  >ESP32ADC.GetEnvelope()
+ *  >ESP32ADC.GetEnvelope(Duration=1000)
  *  >ESP32ADC.AcquireToBuffer()
  *  >ESP32ADC.GetBuffer()
  *  >ESP32ADC.GetStream()
@@ -23,8 +23,7 @@ static bool ESP_ADC2 = false;
 static bool ESP_Both = false;
 static bool ESP_MarkChannelTwo = false;
 
-#define ESP_EnvelopeMeasurementDurationDefault  1000
-static unsigned long ESP_EnvelopeMeasurementDuration = ESP_EnvelopeMeasurementDurationDefault;
+// Max allowed duration for envelope measurement (ms)
 #define ESP_EnvelopeMeasurementDurationMax  100000
 
 #define ESP_SamplingRateDefault 1000
@@ -135,12 +134,12 @@ static void ESP32_GetBuffer()
   }
 }
 
-static String ESP32_ADC_GetEnvelope()
+static String ESP32_ADC_GetEnvelope(unsigned long duration_ms = 1000)
 {
   String ReturnValue;
   int ADC_GPIO = ESP_ADC1Port;
   if (ESP_ADC2) ADC_GPIO = ESP_ADC2Port;
-  unsigned long ttm = ESP_EnvelopeMeasurementDuration;
+  unsigned long ttm = duration_ms;
   ESP32_ADC_Trigger(ESP_TriggerPort, ESP_TriggerEvent);
 
   if (ESP_Both)
@@ -305,17 +304,6 @@ String ESP_ADC()
     String param_val;
     ESP_Set_Port();
 
-    param_val = GetParameterValue("ENVELOPEMEASUREMENTDURATION", UpperCase);
-    if ((param_val != "NOPARAM") && (param_val != "NOVAL"))
-    {
-      ESP_EnvelopeMeasurementDuration = param_val.toInt();
-      if ((ESP_EnvelopeMeasurementDuration > ESP_EnvelopeMeasurementDurationMax) || (ESP_EnvelopeMeasurementDuration <= 0))
-      {
-        LastError("EnvelopeMeasurementDuration out of range, set to default");
-        ESP_EnvelopeMeasurementDuration = ESP_EnvelopeMeasurementDurationDefault;
-      }
-    }
-
     param_val = GetParameterValue("SAMPLINGRATE", UpperCase);
     if ((param_val != "NOPARAM") && (param_val != "NOVAL"))
     {
@@ -382,7 +370,6 @@ String ESP_ADC()
       if (ESP_ADC1) ExPorts = "35"; else ExPorts = "36";
     String result = "Ports in use = " + ExPorts + "\n";
     result = result + "Attenuation = " + ESP_Attenuation + "\n";
-    result = result + "EnvelopeMeasurementDuration = " + String(ESP_EnvelopeMeasurementDuration) + "\n";
     result = result + "SamplingRate = " + String(ESP_SamplingRate) + "\n";
     result = result + "SampleSize = " + String(ESP_SampleSize) + "\n";
     result = result + "TriggerEvent = " + ESP_TriggerEvents[ESP_TriggerEvent] + "\n";
@@ -404,7 +391,16 @@ String ESP_ADC()
 
   if (command == "GETENVELOPE")
   {
-    return ESP32_ADC_GetEnvelope();
+    // Optional parameter: Duration in milliseconds (default 1000)
+    unsigned long duration_ms = 1000;
+    String param_val = GetParameterValue("DURATION", UpperCase);
+    if ((param_val != "NOPARAM") && (param_val != "NOVAL"))
+    {
+      unsigned long parsed = param_val.toInt();
+      if ((parsed > 0) && (parsed <= ESP_EnvelopeMeasurementDurationMax)) duration_ms = parsed;
+      else LastError("Duration out of range, using default 1000");
+    }
+    return ESP32_ADC_GetEnvelope(duration_ms);
   }
 
   if (command == "ACQUIRETOBUFFER")
