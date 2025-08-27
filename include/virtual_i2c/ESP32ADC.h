@@ -2,16 +2,15 @@
 
 /* --- ESP32 ADC (virtual I2C addr D2) ---------------------------------------
  * Command strings:
- *  >ESP32ADC.Configure(Port= , Attenuation= , MarkChannelTwo=false,
- *                      SamplingRate=, SampleSize=, TriggerEvent=,
- *                      Format=Byte|String)
- *  >ESP32ADC.GetConfiguration(BufferSize)
- *  >ESP32ADC.GetConfiguration()
- *  >ESP32ADC.GetValue()
- *  >ESP32ADC.GetEnvelope(Duration=1000)
+ *  >ESP32ADC.ConfigureBufferedRead(Port=35|36|Both, SamplingRate=, SampleSize=, TriggerEvent=IGNORE|LOW|HIGH|CHANGE|RISING|FALLING)
+ *  >ESP32ADC.GetValue(Port=35|36|Both)
+ *  >ESP32ADC.GetEnvelope(Duration=1000, Port=35|36|Both)
  *  >ESP32ADC.AcquireToBuffer()
- *  >ESP32ADC.GetBuffer()
+ *  >ESP32ADC.GetBuffer(Format=Byte|String)
+ *  >ESP32ADC.GetAvailableSampleCount()
  *  >ESP32ADC.GetStream()
+ *  >ESP32ADC.SetAttenuation(Factor=0dB|2.5dB|6dB|11dB)
+ *  >ESP32ADC.Initialize()
  */
 
 #define ESP_ADC1Port 35
@@ -34,7 +33,7 @@ static unsigned long ESP_SamplingRate = ESP_SamplingRateDefault;
 static unsigned long ESP_SampleSize = ESP_SampleSizeDefault;
 #define ESP_SampleSizeMax data_buf_size
 
-#define ESP_AttenuationDefault  "11db"
+#define ESP_AttenuationDefault  "11DB"
 static String ESP_Attenuation = ESP_AttenuationDefault;
 
 static const String ESP_TriggerEvents[]  =  {"IGNORE", "LOW", "HIGH", "CHANGE", "RISING", "FALLING"};
@@ -48,6 +47,8 @@ static int ESP_DefaultTriggerEvent = Ignore;
 static int ESP_TriggerEvent = ESP_DefaultTriggerEvent;
 
 static bool ESP_Byte = false;
+// Number of samples written by the last AcquireToBuffer()
+static volatile unsigned long ESP_AvailableSampleCount = 0;
 
 static bool ESP32_ADC_Trigger(int tp, int event)
 {
@@ -80,19 +81,12 @@ static void ESP32_GetStream()
       time_target = micros() + sample_period_micro;
       ADC_val   = analogRead(ESP_ADC1Port);
       ADC_val_2 = analogRead(ESP_ADC2Port);
-      if (ESP_MarkChannelTwo) bitSet(ADC_val_2, 12);
-      if (ESP_Byte)
-      {
-        write2serial((ADC_val >> 8) & 0xff);
-        write2serial( ADC_val       & 0xff);
-        write2serial((ADC_val_2 >> 8) & 0xff);
-        write2serial( ADC_val_2       & 0xff);
-      }
-      else
-      {
-        print2serial(String(ADC_val));
-        print2serial(String(ADC_val_2));
-      }
+      bitSet(ADC_val_2, 12); // Mark channel 2
+      // Stream always as bytes: Ch1 (MSB,LSB) then Ch2 (MSB,LSB)
+      write2serial((ADC_val >> 8) & 0xff);
+      write2serial( ADC_val       & 0xff);
+      write2serial((ADC_val_2 >> 8) & 0xff);
+      write2serial( ADC_val_2       & 0xff);
       while (micros() < time_target) {};
     } while ((!Serial.available()) && (!BT.available()));
   }
@@ -102,27 +96,21 @@ static void ESP32_GetStream()
     {
       time_target = micros() + sample_period_micro;
       ADC_val = analogRead(ADC_GPIO);
-      if (ESP_Byte)
-      {
-        write2serial((ADC_val >> 8) & 0xff);
-        write2serial( ADC_val       & 0xff);
-      }
-      else
-      {
-        print2serial(String(ADC_val));
-      }
+      // Stream always as bytes: MSB, LSB
+      write2serial((ADC_val >> 8) & 0xff);
+      write2serial( ADC_val       & 0xff);
       while (micros() < time_target) {};
     } while ((!Serial.available()) && (!BT.available()));
   }
 }
 
-static void ESP32_GetBuffer()
+static void ESP32_GetBuffer(bool as_bytes)
 {
   unsigned long samples = ESP_SampleSize;
   if (ESP_Both) samples = samples + samples;
   for (int i = 0; i < samples; i++)
   {
-    if (ESP_Byte)
+    if (as_bytes)
     {
       write2serial((data_buf[i] >> 8) & 0xff);
       write2serial( data_buf[i]       & 0xff);
@@ -134,15 +122,16 @@ static void ESP32_GetBuffer()
   }
 }
 
-static String ESP32_ADC_GetEnvelope(unsigned long duration_ms = 1000)
+// port_mode: 1=ADC1(35), 2=ADC2(36), 3=Both
+static String ESP32_ADC_GetEnvelope(unsigned long duration_ms = 1000, int port_mode = 1)
 {
   String ReturnValue;
   int ADC_GPIO = ESP_ADC1Port;
-  if (ESP_ADC2) ADC_GPIO = ESP_ADC2Port;
+  if (port_mode == 2) ADC_GPIO = ESP_ADC2Port;
   unsigned long ttm = duration_ms;
   ESP32_ADC_Trigger(ESP_TriggerPort, ESP_TriggerEvent);
 
-  if (ESP_Both)
+  if (port_mode == 3)
   {
     pinMode(ESP_ADC1Port, INPUT);
     pinMode(ESP_ADC2Port, INPUT);
@@ -220,6 +209,8 @@ static uint32_t ESP32_ADC_Read_Data()
       while (micros() < time_target) {};
     } while (data_buf_pointer_write < samples);
   }
+  // Record how many samples were captured
+  ESP_AvailableSampleCount = samples;
   return micros() - total_time;
 }
 
@@ -299,7 +290,7 @@ String ESP_ADC()
     return "-";
   }
 
-  if (command == "CONFIGURE")
+  if (command == "CONFIGUREBUFFEREDREAD")
   {
     String param_val;
     ESP_Set_Port();
@@ -332,61 +323,79 @@ String ESP_ADC()
       ESP_TriggerEvent = ESP_decode_event(param_val);
     }
 
-    param_val = GetParameterValue("FORMAT", UpperCase);
-    if ((param_val != "NOPARAM") && (param_val != "NOVAL"))
-    {
-      if (param_val == "BYTE") ESP_Byte = true; else ESP_Byte = false;
-    }
+    
+    return "";
+  } 
 
-    param_val = GetParameterValue("ATTENUATION", UpperCase);
-    if ((param_val != "NOPARAM") && (param_val != "NOVAL"))
+  if (command == "SETATTENUATION")
+  {
+    String val = GetParameterValue("FACTOR", UpperCase);
+    if ((val != "NOPARAM") && (val != "NOVAL"))
     {
-      if ((param_val == "0DB") || (param_val == "2.5DB") || (param_val == "6DB") || (param_val == "11DB"))
+      if ((val == "0DB") || (val == "2.5DB") || (val == "6DB") || (val == "11DB"))
       {
-        ESP_Attenuation = param_val;
-        if      (param_val == "0DB")   analogSetAttenuation(ADC_0db);
-        else if (param_val == "2.5DB") analogSetAttenuation(ADC_2_5db);
-        else if (param_val == "6DB")   analogSetAttenuation(ADC_6db);
-        else if (param_val == "11DB")  analogSetAttenuation(ADC_11db);
+        ESP_Attenuation = val;
+        if      (val == "0DB")   analogSetAttenuation(ADC_0db);
+        else if (val == "2.5DB") analogSetAttenuation(ADC_2_5db);
+        else if (val == "6DB")   analogSetAttenuation(ADC_6db);
+        else if (val == "11DB")  analogSetAttenuation(ADC_11db);
+        return String("");
       }
       else
       {
-        LastError("No correct value found, set to default");
-        ESP_Attenuation = ESP_AttenuationDefault;
-        analogSetAttenuation(ADC_11db);
+        LastError("SetAttenuation: invalid Factor; using default 11dB");
       }
     }
-    return "";
-  } // end CONFIGURE
-
-  if (command == "GETCONFIGURATION")
-  {
-    if (GetParameterValue("BUFFERSIZE", UpperCase) == "NOVAL")
-    {
-      return String(data_buf_size);
-    }
-    String ExPorts;
-    if (ESP_Both) ExPorts = "Both"; else
-      if (ESP_ADC1) ExPorts = "35"; else ExPorts = "36";
-    String result = "Ports in use = " + ExPorts + "\n";
-    result = result + "Attenuation = " + ESP_Attenuation + "\n";
-    result = result + "SamplingRate = " + String(ESP_SamplingRate) + "\n";
-    result = result + "SampleSize = " + String(ESP_SampleSize) + "\n";
-    result = result + "TriggerEvent = " + ESP_TriggerEvents[ESP_TriggerEvent] + "\n";
-    result = result + "OutputFormat = "; if (ESP_Byte) result = result + "Byte"; else result = result + "String";
-    return result;
+    // If invalid or missing, set default
+    ESP_Attenuation = ESP_AttenuationDefault;
+    analogSetAttenuation(ADC_11db);
+    return String("");
   }
 
   if (command == "GETVALUE")
   {
+    // Per-call Port override: 35 (ADC1), 36 (ADC2), or BOTH
+    int desired_mode = 1; // 1=ADC1(35), 2=ADC2(36), 3=Both
+    String p = GetParameterValue("PORT", UpperCase);
+    if ((p != "NOPARAM") && (p != "NOVAL"))
+    {
+      if (p == "BOTH") desired_mode = 3;
+      else {
+        int pv = p.toInt();
+        if (pv == 36) desired_mode = 2; else if (pv == 35) desired_mode = 1;
+      }
+    }
+
+    // Save current config and set temporary sampling mode
     unsigned long samples_save = ESP_SampleSize;
     bool save_ESPBoth = ESP_Both;
+    bool save_ADC1 = ESP_ADC1;
+    bool save_ADC2 = ESP_ADC2;
+
     ESP_SampleSize = 1;
-    ESP_Both = false;
+    if (desired_mode == 3) { ESP_Both = true; ESP_ADC1 = false; ESP_ADC2 = false; }
+    else if (desired_mode == 2) { ESP_Both = false; ESP_ADC1 = false; ESP_ADC2 = true; }
+    else { ESP_Both = false; ESP_ADC1 = true; ESP_ADC2 = false; }
+
     ESP32_ADC_Read_Data();
+
+    // Build return string based on requested port(s)
+    String out;
+    if (desired_mode == 3)
+    {
+      out = String(data_buf[0]) + "," + String(data_buf[1]);
+    }
+    else
+    {
+      out = String(data_buf[0]);
+    }
+
+    // Restore configuration
     ESP_SampleSize = samples_save;
     ESP_Both = save_ESPBoth;
-    return String(data_buf[0]);
+    ESP_ADC1 = save_ADC1;
+    ESP_ADC2 = save_ADC2;
+    return out;
   }
 
   if (command == "GETENVELOPE")
@@ -400,7 +409,21 @@ String ESP_ADC()
       if ((parsed > 0) && (parsed <= ESP_EnvelopeMeasurementDurationMax)) duration_ms = parsed;
       else LastError("Duration out of range, using default 1000");
     }
-    return ESP32_ADC_GetEnvelope(duration_ms);
+    // Optional parameter: Port to measure (35, 36, or BOTH); default 35
+    int port_mode = 1;
+    String p = GetParameterValue("PORT", UpperCase);
+    if ((p != "NOPARAM") && (p != "NOVAL"))
+    {
+      if (p == "BOTH") port_mode = 3;
+      else
+      {
+        int pv = p.toInt();
+        if (pv == 36) port_mode = 2;
+        else if (pv == 35) port_mode = 1;
+        else { LastError("Invalid Port for GetEnvelope; using 35"); port_mode = 1; }
+      }
+    }
+    return ESP32_ADC_GetEnvelope(duration_ms, port_mode);
   }
 
   if (command == "ACQUIRETOBUFFER")
@@ -411,8 +434,23 @@ String ESP_ADC()
 
   if (command == "GETBUFFER")
   {
-    ESP32_GetBuffer();
+    // Optional per-call format override
+    bool as_bytes = ESP_Byte; // default to configured format
+    String f = GetParameterValue("FORMAT", UpperCase);
+    if ((f != "NOPARAM") && (f != "NOVAL"))
+    {
+      if (f == "BYTE")  as_bytes = true;
+      else if (f == "STRING")  as_bytes = false;
+    }
+    ESP32_GetBuffer(as_bytes);
+    // Reset available-sample count after reading from the buffer
+    ESP_AvailableSampleCount = 0;
     return String("");
+  }
+
+  if (command == "GETAVAILABLESAMPLECOUNT")
+  {
+    return String(ESP_AvailableSampleCount);
   }
 
   if (command == "GETSTREAM")

@@ -24,13 +24,15 @@ Send commands over USB serial or Bluetooth as lines starting with `>`, for examp
 - `>Speaker.Stop()`
 
 ## ESP32 ADC (virtual, prefix `ESP32ADC`)
-- `>ESP32ADC.Configure(Port=35|36|Both, Attenuation=0dB|2.5dB|6dB|11dB, MarkChannelTwo=false, MeasuringInterval=, SamplingRate=, SampleSize=, TriggerEvent=Ignore|Low|High|Change|Rising|Falling, Format=Byte|String)`
-- `>ESP32ADC.GetConfiguration(BufferSize)`
-- `>ESP32ADC.GetValue()`
-- `>ESP32ADC.GetEnvelope()`
+- `>ESP32ADC.ConfigureBufferedRead(Port=35|36|Both, SamplingRate=, SampleSize=, TriggerEvent=IGNORE|LOW|HIGH|CHANGE|RISING|FALLING)`
+- `>ESP32ADC.GetValue(Port=35|36|Both)`
+- `>ESP32ADC.GetEnvelope(Duration=1000, Port=35|36|Both)`
 - `>ESP32ADC.AcquireToBuffer()`
-- `>ESP32ADC.GetBuffer()`
+- `>ESP32ADC.GetBuffer(Format=Byte|String)`
+- `>ESP32ADC.GetAvailableSampleCount()`
 - `>ESP32ADC.GetStream()`
+- `>ESP32ADC.SetAttenuation(Factor=0dB|2.5dB|6dB|11dB)`
+- `>ESP32ADC.Initialize()`
 
 ## GPIO (virtual, prefix `M5GPIO`)
 - `>M5GPIO.SetValue(Port=2|5|16|17|25|26, Value=0|1)`
