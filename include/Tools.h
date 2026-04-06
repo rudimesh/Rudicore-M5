@@ -176,8 +176,8 @@ char * BTNameConstruct()
   sprintf(baseMacChr, "%02X:%02X:%02X:%02X:%02X:%02X", baseMac[0], baseMac[1], baseMac[2], baseMac[3], baseMac[4], baseMac[5]);
   BT_Address = baseMacChr;
 
-  char * BTName = (char *) malloc (16);
-  strcpy(BTName, "M5Stack_");
+  char * BTName = (char *) malloc (24);
+  strcpy(BTName, "Rudicore-M5_");
   char c_tmp[10];
   sprintf(c_tmp, "%02X:%02X:%02X", baseMac[3], baseMac[4], baseMac[5]);
   strcat(BTName, c_tmp);
