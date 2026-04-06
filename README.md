@@ -39,9 +39,9 @@ For a full list of supported M5Stack Units and their command strings see <a href
   - Expand "Assets" and download the latest binary.
   - Flash it with [esptool](https://github.com/espressif/esptool), e.g.:  
   ```
-  esptool.py --chip esp32 --port COM1 --baud 115200 write_flash -z 0x10000 Rudicore-M5.bin
+  esptool.py --chip esp32 --port COM1 write_flash 0x0 Rudicore-M5.bin
   ```
-  Replace COM1 with the port your M5Stack is connected to.
+  Replace COM1 with the COM port your M5Stack is connected to. For Linux use the appropriate ttyUSB or ttyACM device name in /dev.
 
 - From source:
   - Clone the repository.
