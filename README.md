@@ -34,6 +34,9 @@ For a full list of supported M5Stack Units and their command strings see <a href
 
 ## How to install:
 
+- Web based flashing tool:
+  - The easiest way to install Rudicore-M5 on your device is to use the web-based firmware flasher. Click [here](https://rudimesh.github.io/Rudicore-M5/webflasher.html) to flash the firmware directly from your browser.
+
 - From a binary:
   - Go over to the releases page.
   - Expand "Assets" and download the latest binary.

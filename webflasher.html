@@ -1,0 +1,415 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Rudicore-M5 Flash Tool</title>
+
+  <script
+    type="module"
+    src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module"
+  ></script>
+
+  <style>
+    :root {
+      --bg: #ffffff;
+      --card: #ffffff;
+      --text: #2b1a1a;
+      --muted: #797777;
+      --accent: #e3000b;
+      --accent-hover: #be311e;
+      --accent-dark: #8f2011;
+      --border: #e5e7eb;
+      --shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+      --radius: 18px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #ffffff;
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 32px 20px 60px;
+    }
+
+    .hero {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 32px;
+      margin-bottom: 24px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--accent);
+      background: #f5f5f5;
+      border-radius: 999px;
+      margin-bottom: 14px;
+      border: 1px solid var(--border);
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      font-size: clamp(2rem, 4vw, 2.8rem);
+      line-height: 1.15;
+      color: var(--accent-dark);
+    }
+
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+      font-size: 1.05rem;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 24px;
+      margin-top: 24px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 28px;
+    }
+
+    h2 {
+      margin-top: 0;
+      margin-bottom: 16px;
+      font-size: 1.35rem;
+      color: var(--accent-dark);
+    }
+
+    .steps {
+      counter-reset: step;
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .steps li {
+      position: relative;
+      padding-left: 52px;
+      margin-bottom: 20px;
+    }
+
+    .steps li:last-child {
+      margin-bottom: 0;
+    }
+
+    .steps li::before {
+      counter-increment: step;
+      content: counter(step);
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: white;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 6px 14px rgba(227, 0, 11, 0.25);
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .install-box {
+      text-align: center;
+      padding: 20px;
+      background: #ffffff;
+      border: 1px dashed var(--border);
+      border-radius: 14px;
+      margin-top: 18px;
+    }
+
+    .tip,
+    .warning {
+      border-radius: 14px;
+      padding: 14px 16px;
+      margin-top: 18px;
+      font-size: 0.96rem;
+    }
+
+    .tip {
+      background: #f9fafb;
+      border: 1px solid var(--border);
+    }
+
+    .warning {
+      background: #fff5f5;
+      border: 1px solid rgba(227, 0, 11, 0.2);
+      color: #5a1a1a;
+    }
+
+    code {
+      background: #f3f4f6;
+      border: 1px solid var(--border);
+      padding: 0.15em 0.4em;
+      border-radius: 8px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.95em;
+      color: var(--accent-dark);
+    }
+
+    ul {
+      padding-left: 20px;
+    }
+
+    .test-box {
+      margin-top: 22px;
+      padding: 20px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: #fafafa;
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .action-button {
+      appearance: none;
+      border: none;
+      border-radius: 12px;
+      padding: 12px 18px;
+      font-size: 0.98rem;
+      font-weight: 600;
+      cursor: pointer;
+      background: var(--accent);
+      color: #ffffff;
+      transition: background 0.2s ease, transform 0.05s ease;
+    }
+
+    .action-button:hover {
+      background: var(--accent-hover);
+    }
+
+    .action-button:active {
+      transform: translateY(1px);
+    }
+
+    .action-button:disabled {
+      opacity: 0.7;
+      cursor: wait;
+    }
+
+    .status {
+      margin-top: 14px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: #ffffff;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      min-height: 48px;
+    }
+
+    esp-web-install-button {
+      --esp-tools-button-color: #e3000b;
+      --esp-tools-button-text-color: #ffffff;
+    }
+
+    esp-web-install-button::part(button),
+    esp-web-install-button::part(install-button) {
+      background-color: #e3000b !important;
+      color: #ffffff !important;
+
+    }
+
+
+
+    @media (max-width: 760px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .hero,
+      .card {
+        padding: 22px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <section class="hero">
+      <div class="badge">Rudicore-M5 Web Installer</div>
+      <h1>Install Rudicore-M5 on your M5Stack</h1>
+      <p class="subtitle">
+        Flash the latest Rudicore-M5 firmware directly from your browser. Use Google Chrome or Microsoft Edge on a desktop or laptop computer.
+      </p>
+    </section>
+
+    <div class="grid">
+      <section class="card">
+        <h2>Installation steps</h2>
+
+        <div class="muted">
+          <ul class="steps">
+            <li>First, leave your M5Stack disconnected and click the "Connect" button below.</li>
+            <li>Your browser will show a popup dialog with a list of ports. Note which ports are shown.</li>
+            <li>Dismiss both dialogs (including the “No port selected” message) by clicking "Cancel".</li>
+            <li>Connect the M5Stack and click the "Connect" button below again to reopen the port list.</li>
+            <li>The new port that appears is usually your device. Typical names may include <code>USB Serial</code>, <code>CP210x</code>, <code>CH340</code>, or <code>ttyUSB</code>/<code>ttyACM</code>.</li>
+            <li>Select the newly appeared port, click "Connect" in the dialog, and confirm the installation.</li>
+            <li>Wait for flashing to complete. Keep the USB cable connected during the process. The device may reboot automatically when installation is finished.</li>
+            <li>If desired, you can test your device with the device tester at the bottom of this page.</li>
+          </ul>
+        </div>
+
+        <div class="install-box">
+          <esp-web-install-button manifest="./manifest.json"></esp-web-install-button>
+        </div>
+
+        <div class="warning">
+          <strong>Warning:</strong> Make sure no other ESP32 or related devices are connected because if you select the wrong port, you may accidentally flash those. This usually cannot be undone, so be careful.
+        </div>
+
+        <div class="test-box">
+          <h2>Testing your device</h2>
+          <p class="muted">
+            After flashing is complete, you can test whether the device responds correctly by sending the command <code>&gt;SPEAKER.BEEP()</code> over Web Serial.
+          </p>
+          <p class="muted">
+            Click "Test Beep", select your device in the port picker, click "Connect", and the page will send the command and close the port automatically. If everything is working correctly, you should hear a beep.
+          </p>
+
+          <div class="button-row">
+            <button id="test-beep" class="action-button" type="button">Test Beep</button>
+          </div>
+
+          <div id="status" class="status">
+            No test has been run yet.
+          </div>
+        </div>
+
+
+      </section>
+
+      <aside class="card">
+        <h2>Before you begin</h2>
+        <ul>
+          <li>Use a desktop browser</li>
+          <li>Use Chrome or Edge</li>
+          <li>Use a USB data cable</li>
+          <li>Disconnect other serial devices if possible</li>
+        </ul>
+
+        <h2>Troubleshooting</h2>
+        <ul>
+          <li>No port visible: reconnect the device and try a different cable.</li>
+          <li>Wrong port selected: unplug the M5Stack and see which port disappears.</li>
+          <li>Flashing fails: close other applications using the port and try again.</li>
+          <li>No beep during test: run the test again and make sure you selected the correct port.</li>
+        </ul>
+        <div class="footer">
+  Flashing powered by <a href="https://github.com/esphome/esp-web-tools" target="_blank">ESP Web Tools</a> (MIT License)
+</div>
+      </aside>
+    </div>
+
+  </div>
+
+  <script>
+    const testButton = document.getElementById("test-beep");
+    const statusEl = document.getElementById("status");
+
+    function setStatus(message) {
+      statusEl.textContent = message;
+    }
+
+    async function testBeep() {
+      if (!("serial" in navigator)) {
+        setStatus("Web Serial is not supported in this browser.");
+        alert("Web Serial is not supported in this browser.");
+        return;
+      }
+
+      let port = null;
+      let writer = null;
+      let encoder = null;
+      let pipePromise = null;
+
+      testButton.disabled = true;
+      setStatus("Select your device in the port picker to run the beep test.");
+
+      try {
+        port = await navigator.serial.requestPort();
+
+        await port.open({
+          baudRate: 115200,
+          dataBits: 8,
+          stopBits: 1,
+          parity: "none",
+          flowControl: "none",
+        });
+
+        encoder = new TextEncoderStream();
+        pipePromise = encoder.readable.pipeTo(port.writable);
+        writer = encoder.writable.getWriter();
+
+        await writer.write(">SPEAKER.BEEP()");
+
+        await writer.close();
+        writer = null;
+
+        await pipePromise;
+
+        await port.close();
+        port = null;
+
+        setStatus("Test command sent and port closed. If everything is working, the device should have beeped.");
+      } catch (error) {
+        if (error && error.name === "NotFoundError") {
+          setStatus("No port was selected.");
+        } else {
+          console.error(error);
+          setStatus("The beep test failed. Please try again.");
+        }
+
+        try {
+          if (writer) {
+            await writer.close();
+          }
+        } catch (_) {}
+
+        try {
+          if (port) {
+            await port.close();
+          }
+        } catch (_) {}
+      } finally {
+        testButton.disabled = false;
+      }
+    }
+
+    testButton.addEventListener("click", testBeep);
+  </script>
+</body>
+</html>

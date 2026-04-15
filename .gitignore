@@ -14,6 +14,7 @@ libdeps/
 # ─────────── Build output ───────────
 *.elf
 *.bin
+!Rudicore-M5.bin
 *.hex
 *.map
 *.out
