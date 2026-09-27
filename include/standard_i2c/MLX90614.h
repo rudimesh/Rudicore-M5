@@ -8,8 +8,6 @@
 #define MLX90614_default_address 0x5A
 int MLX90614_address = MLX90614_default_address;
 
-// PaHUB port used for this device
-extern int MLX90614_port;
 
 bool MLX90614_connected()
 {
@@ -21,7 +19,6 @@ bool MLX90614_connected()
 
 bool MLX90614_init()
 {
-  if (PaHUB_active && MLX90614_port >= 0) selectPaHUBChannel(MLX90614_port);
   Wire.beginTransmission(MLX90614_address); // Send start condition and device address (default 0x5A)
   Wire.write(0x07);                         // Read temperature register (object)
   Wire.endTransmission(false);
@@ -49,7 +46,6 @@ String MLX90614_TEMP()
 
 String MLX90614()
 {
-  if (PaHUB_active && MLX90614_port >= 0) selectPaHUBChannel(MLX90614_port);
   if (!NCir_active) MLX90614_init();
   if (!NCir_active)
   {

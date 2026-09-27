@@ -21,8 +21,6 @@ int32_t Roller_Speed = def_Roller_Speed;
 int32_t Roller_Pos = def_Roller_Pos;
 uint8_t Roller_Output = def_Roller_Output;
 
-// PaHUB port used for this device
-extern int Roller_port;
 
 // --- Roller Registers ---
 #define I2C_ADDR (0x64)
@@ -112,7 +110,6 @@ uint8_t Roller_read_byte(uint8_t reg) {
 
 String Roller()
 {
-  if (PaHUB_active && Roller_port >= 0) selectPaHUBChannel(Roller_port);
   if (!Roller_connected())
   {
     LastError("No Roller device available");

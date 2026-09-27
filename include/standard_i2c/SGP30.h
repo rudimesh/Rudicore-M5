@@ -13,12 +13,9 @@
 
 Adafruit_SGP30 sgp;
 
-// PaHUB port used for this device
-extern int SGP30_port;
 
 bool SGP30_init()
 {
-  if (PaHUB_active && SGP30_port >= 0) selectPaHUBChannel(SGP30_port);
   if (sgp.begin())
   {
     SGP30_active = true;
@@ -80,7 +77,6 @@ String SGP30_ethanol()
 // Main SGP30 CO2 sensor function
 String SGP30()
 {
-  if (PaHUB_active && SGP30_port >= 0) selectPaHUBChannel(SGP30_port);
   if (!SGP30_active) SGP30_init(); // ensure the sensor is initialized
   
   if (command == "TVOC") return String(SGP30_tvoc());         //>SGP30.TVOC()
@@ -98,6 +94,5 @@ String SGP30()
   LastError("No valid command found");
   return "-";
 }
-
 
 

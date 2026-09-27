@@ -10,8 +10,6 @@
 #define M5_UNIT_AMETER_EEPROM_I2C_ADDR      0x51
 #define M5_UNIT_AMETER_PRESSURE_COEFFICIENT 0.05F
 
-// PaHUB port used for this device
-extern int AMeter_port;
 
 ADS1115 Ameter;
 
@@ -20,7 +18,6 @@ float AMeter_calibration = 0.0;
 
 bool AMeter_init()
 {
-  if (PaHUB_active && AMeter_port >= 0) selectPaHUBChannel(AMeter_port);
   AMeter_active = false;
   if (!Ameter.begin(&Wire, M5_UNIT_AMETER_I2C_ADDR, 21, 22, 400000U))
   {
@@ -40,7 +37,6 @@ bool AMeter_init()
 
 String AMeter_unit()
 {
-  if (PaHUB_active && AMeter_port >= 0) selectPaHUBChannel(AMeter_port);
   if (!AMeter_active) AMeter_init();
   if (!AMeter_active) return "-";
 

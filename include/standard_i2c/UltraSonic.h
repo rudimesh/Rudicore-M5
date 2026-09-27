@@ -6,8 +6,6 @@
 
 #define UltraSonic_address 0x57
 
-// PaHUB port used for this device
-extern int UltraSonic_port;
 
 bool UltraSonic_connected()
 {
@@ -19,7 +17,6 @@ bool UltraSonic_connected()
 
 bool UltraSonic_init()
 {
-  if (PaHUB_active && UltraSonic_port >= 0) selectPaHUBChannel(UltraSonic_port);
   if (UltraSonic_connected()) UltraSonic_active = true; else UltraSonic_active = false;
   return UltraSonic_active;
 }
@@ -45,7 +42,6 @@ int UltraSonic_distance()
 
 String UltraSonic()     // UltraSonic unit handler
 {
-  if (PaHUB_active && UltraSonic_port >= 0) selectPaHUBChannel(UltraSonic_port);
   if (!UltraSonic_active) UltraSonic_init();
   if (!UltraSonic_active)
   {

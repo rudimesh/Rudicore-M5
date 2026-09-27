@@ -29,8 +29,6 @@
 #define EXT_ENCODER_FW_VERSION_REG     0xFE
 #define EXT_ENCODER_I2C_ADDRESS_REG    0xFF
 
-// PaHUB port used for this device
-extern int ExtEncoder_port;
 
 bool ExtEncoder_connected()
 {
@@ -39,7 +37,6 @@ bool ExtEncoder_connected()
 
 bool ExtEncoder_init()
 {
-  if (PaHUB_active && ExtEncoder_port >= 0) selectPaHUBChannel(ExtEncoder_port);
   ExtEncoder_active = ExtEncoder_connected();
   return ExtEncoder_active;
 }
@@ -107,7 +104,6 @@ String ExtEncoder_read_string(uint8_t reg)
 
 String ExtEncoder()
 {
-  if (PaHUB_active && ExtEncoder_port >= 0) selectPaHUBChannel(ExtEncoder_port);
   if (!ExtEncoder_active) ExtEncoder_init();
   if (!ExtEncoder_active)
   {

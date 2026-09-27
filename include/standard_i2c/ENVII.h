@@ -12,15 +12,12 @@
 #define KELVIN     2
 #define FAHRENHEIT 3
 
-// PaHUB port used for this device
-extern int ENVII_port;
 
 Adafruit_BMP280 bme;
 SHT3X sht30;
 
 bool BMP280_init()
 {
-  if (PaHUB_active && ENVII_port >= 0) selectPaHUBChannel(ENVII_port);
   ENVII_active = bme.begin(BMP280_address);
   return ENVII_active;
 }
@@ -28,7 +25,6 @@ bool BMP280_init()
 // Main ENVII (BMP280 & SHT3X) function
 String BMP280_SHT3X()
 {
-  if (PaHUB_active && ENVII_port >= 0) selectPaHUBChannel(ENVII_port);
   float tmp = 0.0;
   float hum = 0.0;
   if (!ENVII_active) BMP280_init();

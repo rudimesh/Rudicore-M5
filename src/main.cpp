@@ -217,7 +217,6 @@ char UpperCase = 'U';
   void loop() 
   {
   read_user_input();
-  ensurePaHUBPort();
   if (sensor == "SYSTEM") print2serial(System());
   if (sensor == "SPEAKER") print2serial(Speaker());
   if (sensor == "COLOR") print2serial(Color());

@@ -9,8 +9,6 @@
 
 #define ADXL345_address 0x53
 
-// PaHUB port used for this device
-extern int ADXL345_port;
 
 ADXL345 adxl345(ADXL345_address);
 
@@ -23,7 +21,6 @@ bool ADXL345_connected()
 
 bool ADXL345_init()
 {
-  if (PaHUB_active && ADXL345_port >= 0) selectPaHUBChannel(ADXL345_port);
   ADXL345_active = ADXL345_connected();
   if (ADXL345_active) {
     adxl345.start();
@@ -33,7 +30,6 @@ bool ADXL345_init()
 
 String ADXL345_sensor()
 {
-  if (PaHUB_active && ADXL345_port >= 0) selectPaHUBChannel(ADXL345_port);
   if (!ADXL345_active) ADXL345_init();
   if (!ADXL345_active) {
     LastError("ADXL345 not found");
@@ -63,4 +59,3 @@ String ADXL345_sensor()
 }
 
 // -----------------------------------------------------------------------------
-

@@ -1,8 +1,13 @@
 #pragma once
 
+#include "Version.h"
+#include "Capabilities.h"
+
 /* --- System virtual unit (I2C addr D4) ------------------------------------
  * Prefix: SYSTEM
  * Commands:
+ *   >SYSTEM.GetFirmwareVersion()
+ *   >SYSTEM.GetCapabilities()
  *   >SYSTEM.Restart()
  *   >SYSTEM.BTName()
  *   >SYSTEM.FriendlyName()
@@ -25,6 +30,10 @@ static inline void System_HardReset()
 
 String System()
 {
+  // Firmware support, independent of connected devices or the selected I2C bus.
+  if (command == "GETFIRMWAREVERSION") return Firmware_Version;
+  if (command == "GETCAPABILITIES") return String(Firmware_Capabilities);
+
   // Restart
   if (command == "RESTART")
   {

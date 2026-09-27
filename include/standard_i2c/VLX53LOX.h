@@ -12,8 +12,6 @@
  */
 #define VL53L0X_address 0x29
 
-// PaHUB port used for this device
-extern int VLX53LOX_port;
 
 #define tof_buffer_size 550
 unsigned int tof_buf[tof_buffer_size];
@@ -96,7 +94,6 @@ bool GetBuffer(bool IncludeTimestamps, unsigned int NumberOfSamples)
 String VLX53LOX()
 {
 
-  if (PaHUB_active && VLX53LOX_port >= 0) selectPaHUBChannel(VLX53LOX_port);
   // check TOF is connected
   if (!TOF_active) VLX53LOX_init();
   if (!TOF_active) return "-";  

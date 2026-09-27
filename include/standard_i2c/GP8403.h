@@ -17,8 +17,6 @@ int def_GP8403_output_range = 5;                        // default output range 
 int GP8403_output_range = def_GP8403_output_range;
 int GP8403_channel = 0;                                 // current output channel
 
-// PaHUB port used for this device
-extern int GP8403_port;
 
 GP8403 _gp8403 = GP8403(GP8403_i2c_address);
 
@@ -97,7 +95,6 @@ String GP8403_OutputRange(int val)
 
 bool GP8403_init()
 {
-  if (PaHUB_active && GP8403_port >= 0) selectPaHUBChannel(GP8403_port);
   GP8403_active = GP8403_connected();
   if (GP8403_active) GP8403_OutputRange(def_GP8403_output_range);
   return GP8403_active;
@@ -106,7 +103,6 @@ bool GP8403_init()
 
 String DAC_GP8403()
 {
-  if (PaHUB_active && GP8403_port >= 0) selectPaHUBChannel(GP8403_port);
   String val;
   int v;
   

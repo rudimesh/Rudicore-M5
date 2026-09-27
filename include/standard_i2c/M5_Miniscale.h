@@ -14,8 +14,6 @@ UNIT_SCALES scales;
 
 #define M5_Miniscale_address 0x26
 
-// PaHUB port used for this device
-extern int M5_Miniscale_port;
 
 bool M5_Miniscale_connected()
 {
@@ -34,7 +32,6 @@ bool M5_Miniscale_init()
 
 String M5_Miniscale()
 {
-  if (PaHUB_active && M5_Miniscale_port >= 0) selectPaHUBChannel(M5_Miniscale_port);
   if (!M5_Miniscale_active) M5_Miniscale_init();
   if (!M5_Miniscale_active)
   {
@@ -89,6 +86,5 @@ String M5_Miniscale()
 
 
 // --------------------------------------------------------------------------------------------------------
-
 
 

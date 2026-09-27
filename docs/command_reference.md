@@ -3,6 +3,10 @@
 Send commands over USB serial or Bluetooth as lines starting with `>`, for example `>SYSTEM.BTName()`.
 
 ## System (virtual, prefix `SYSTEM`)
+
+- `>SYSTEM.GetFirmwareVersion()` returns the firmware version string from `Version.h`.
+- `>SYSTEM.GetCapabilities()` returns one comma-separated line of uppercase `PREFIX.COMMAND` identifiers, without parameters, parentheses, or a leading `>`. For example: `ADC.CONFIGURE,ADC.GETNTCTEMP,...,SYSTEM.GETCAPABILITIES,...`. The list includes every implemented command and the legacy `M5TOOLS`/`M5TEST` system aliases, regardless of connected devices. It does not scan or change the selected I2C bus. Parameters are documented below; supported commands may still require appropriate hardware. Keep `include/Capabilities.h` updated when adding, removing, or renaming commands.
+
 - `>SYSTEM.Restart()`
 - `>SYSTEM.BTName()`
 - `>SYSTEM.FriendlyName()`

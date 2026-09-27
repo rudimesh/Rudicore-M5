@@ -19,15 +19,12 @@ byte gammatable[256];
 #define default_Color_Gain TCS34725_GAIN_4X
 #define default_Color_IntegrationTime TCS34725_INTEGRATIONTIME_50MS
 
-// PaHUB port used for this device
-extern int TCS34725_port;
 
 Adafruit_TCS34725 tcs = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_4X);
 
 // initialize, return true if ready.
 bool Color_init()
 {
-  if (PaHUB_active && TCS34725_port >= 0) selectPaHUBChannel(TCS34725_port);
   Color_active = false;
   if (tcs.begin())
   {
@@ -128,7 +125,6 @@ bool Color_configure_Gain(String param_val)
 
 String Color()
 {
-  if (PaHUB_active && TCS34725_port >= 0) selectPaHUBChannel(TCS34725_port);
   String param_val;
   uint16_t clear, red, green, blue;
 

@@ -8,12 +8,9 @@
 #define MCP4725_address 0x60    // 0x60 or 0x61 depending on ADDR pin
 Adafruit_MCP4725 dac;
 
-// PaHUB port used for this device
-extern int MCP4725_port;
  
 bool MCP4725_init()
 {
-  if (PaHUB_active && MCP4725_port >= 0) selectPaHUBChannel(MCP4725_port);
   bool active = dac.begin(MCP4725_address);
   dac.setVoltage(0, false);       // Set output to 0. Parameters: val, storeflag. Storeflag stores the val in EEPROM (max. 20.000 times)
   MCP4725_active = active;
@@ -23,7 +20,6 @@ bool MCP4725_init()
 // Main MCP4725 function
 String MCP4725()
 {
-  if (PaHUB_active && MCP4725_port >= 0) selectPaHUBChannel(MCP4725_port);
   if (!MCP4725_active) MCP4725_init();
   if (!MCP4725_active) return "-";
 
@@ -56,5 +52,4 @@ String MCP4725()
   return "-";
 }
 // --------------------------------------------------------------------------------------------------------
-
 

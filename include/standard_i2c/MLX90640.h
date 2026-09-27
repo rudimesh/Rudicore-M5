@@ -12,8 +12,6 @@
 #define MLX90640_ADDRESS 0x33
 #define TA_SHIFT 8
 
-// PaHUB port used for this device
-extern int MLX90640_port;
 
 // Temperature range used for color mapping
 #define MINTEMP 24
@@ -129,7 +127,6 @@ static void MLX90640_draw_white_image(int offx, int offy)
 String MLX90640()
 {
     
-    if (PaHUB_active && MLX90640_port >= 0) selectPaHUBChannel(MLX90640_port);
 
     if (!MLX90640_active) MLX90640_init();
     if (!MLX90640_active) {

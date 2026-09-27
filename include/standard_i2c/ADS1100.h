@@ -10,12 +10,9 @@ ADS1100 ads;
 #define default_ADS1100_Gain  GAIN_ONE
 #define default_ADS1100_Rate  RATE_8
 
-// PaHUB port used for this device
-extern int ADS1100_port;
 
 bool ADS1100_init()
 {
-  if (PaHUB_active && ADS1100_port >= 0) selectPaHUBChannel(ADS1100_port);
   ADS1100_active = true;
   ads.getAddr_ADS1100(ADS1100_DEFAULT_ADDRESS);   
 
@@ -154,7 +151,6 @@ bool ADS1100_configure_Rate(String param_val)
 // Main ADS1100 function
 String ADC_ADS1100()
 {
-  if (PaHUB_active && ADS1100_port >= 0) selectPaHUBChannel(ADS1100_port);
   // check ADC is connected
   if (!ADS1100_active) ADS1100_init();
   if (!ADS1100_active) 

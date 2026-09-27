@@ -10,8 +10,6 @@ M5_KMeter Ksensor;
 
 #define KMeter_address 0x66
 
-// PaHUB port used for this device
-extern int KMeter_port;
 
 bool KMeter_connected()
 {
@@ -23,7 +21,6 @@ bool KMeter_connected()
 
 bool KMeter_init()
 {
-  if (PaHUB_active && KMeter_port >= 0) selectPaHUBChannel(KMeter_port);
   Ksensor.begin();
   delay(10);
   if (KMeter_connected()) KMeter_active = true; else KMeter_active = false;
@@ -32,7 +29,6 @@ bool KMeter_init()
 
 String KMeter()
 {
-  if (PaHUB_active && KMeter_port >= 0) selectPaHUBChannel(KMeter_port);
   if (!KMeter_active) KMeter_init();
   if (!KMeter_active)
   {
@@ -54,4 +50,3 @@ String KMeter()
 
 
 // --------------------------------------------------------------------------------------------------------
-

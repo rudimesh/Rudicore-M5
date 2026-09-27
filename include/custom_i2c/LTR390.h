@@ -13,8 +13,6 @@
 byte LTR390_i2c_address = 0x53;
 LTR390 ltr390(LTR390_i2c_address);
 
-// PaHUB port used for this device
-extern int UV_port;
 
 bool UV_connected()
 {
@@ -26,7 +24,6 @@ bool UV_connected()
 
 bool UV_init()
 {
-  if (PaHUB_active && UV_port >= 0) selectPaHUBChannel(UV_port);
   UV_active = UV_connected();
   if (UV_active)
   {
@@ -37,7 +34,6 @@ bool UV_init()
 
 String UV()
 {
-  if (PaHUB_active && UV_port >= 0) selectPaHUBChannel(UV_port);
   String val;
   int v;
   

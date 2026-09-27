@@ -18,8 +18,6 @@ int PbHUB_Port = def_PbHUB_Port;
 String PbHUB_DataLine = def_PbHUB_DataLine;
 int PbHUB_Val = 0;
 
-// PaHUB port used for this device
-extern int PbHUB_port;
 
 bool PbHUB_connected()
 {
@@ -31,7 +29,6 @@ bool PbHUB_connected()
 
 bool PbHUB_init()
 {
-  if (PaHUB_active && PbHUB_port >= 0) selectPaHUBChannel(PbHUB_port);
   if (PbHUB_connected())
   {
     PbHUB.begin();
@@ -83,7 +80,6 @@ void PbHUB_GetParameters()
 
 String PbdotHUB()
 {
-  if (PaHUB_active && PbHUB_Port >= 0) selectPaHUBChannel(PbHUB_Port);
 
   if (!PbHUB_active) PbHUB_init();
   if (!PbHUB_active)
@@ -149,4 +145,3 @@ String PbdotHUB()
 
 
 //------------------------------------------------------------------------------------------------
-

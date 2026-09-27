@@ -11,6 +11,8 @@ constexpr uint32_t PAHUB_TIMEOUT_MS = 50;
 
 // Currently selected port (0–5) on the hub; -1 means unknown/none selected
 int PaHUBport = -1;
+// PaHUB routing is caller-controlled. Unit drivers must not change the selected
+// hub channel; the external client selects the port before issuing a unit command.
 #define PortNrMin 0
 #define PortNrMax 6
 
@@ -188,15 +190,4 @@ inline void writeRegister(uint8_t value)
 inline uint8_t readRegister()
 {
   return readPaHUBRaw();
-}
-
-// Ensure the hub is on the currently selected channel before talking to
-// downstream devices. This helper is safe to call even if the hub is not
-// present.
-inline void ensurePaHUBPort()
-{
-  if (PaHUB_active)
-  {
-    selectPaHUBChannel(PaHUBport);
-  }
 }

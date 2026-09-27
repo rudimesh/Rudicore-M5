@@ -7,8 +7,6 @@
 
 int FACES_ENCODER_ADDR=0x5E;
 
-// PaHUB port used for this device
-extern int FacesEncoder_port;
 
 bool FacesEncoder_connected()
 {
@@ -17,14 +15,12 @@ bool FacesEncoder_connected()
 
 bool FacesEncoder_init()
 {
-  if (PaHUB_active && FacesEncoder_port >= 0) selectPaHUBChannel(FacesEncoder_port);
   FacesEncoder_active = FacesEncoder_connected();
   return FacesEncoder_active;
 }
 
 String FacesEncoder()
 {
-  if (PaHUB_active && FacesEncoder_port >= 0) selectPaHUBChannel(FacesEncoder_port);
   if (!FacesEncoder_active) FacesEncoder_init();
   if (!FacesEncoder_active)
   {

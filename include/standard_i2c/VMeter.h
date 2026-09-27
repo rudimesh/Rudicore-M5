@@ -10,8 +10,6 @@
 #define M5_UNIT_VMETER_EEPROM_I2C_ADDR      0x53
 #define M5_UNIT_VMETER_PRESSURE_COEFFICIENT 0.015918958F
 
-// PaHUB port used for this device
-extern int VMeter_port;
 
 ADS1115 VMeter;
 
@@ -20,7 +18,6 @@ float VMeter_calibration = 0.0;
 
 bool VMeter_init()
 {
-  if (PaHUB_active && VMeter_port >= 0) selectPaHUBChannel(VMeter_port);
   VMeter_active = false;
   if (!VMeter.begin(&Wire, M5_UNIT_VMETER_I2C_ADDR, 21, 22, 400000U))
   {
@@ -40,7 +37,6 @@ bool VMeter_init()
 
 String VMeter_unit()
 {
-  if (PaHUB_active && VMeter_port >= 0) selectPaHUBChannel(VMeter_port);
   if (!VMeter_active) VMeter_init();
   if (!VMeter_active) return "-";
 
